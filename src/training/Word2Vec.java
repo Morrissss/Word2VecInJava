@@ -228,12 +228,10 @@ public class Word2Vec {
     													num, (x, y) -> compareProduct(x, y, vec));
     	for (WordNode node : wordNodeMap.values()) {
     		if (!node.getWord().equals(word)) {
-    			if (heap.isEmpty()) {
+    			if (heap.size() < num) {
     				heap.add(node);
     			} else if (compareProduct(heap.peek(), node, vec) < 0) {
-    				if (heap.size() == num) {
-    					heap.poll();
-    				}
+					heap.poll();
     				heap.add(node);
     			}
     		}
