@@ -26,7 +26,7 @@ public class Word2Vec {
         VectorModel vm = VectorModel.loadFromFile(modelFilePath);
         Set<VectorModel.WordScore> result1 = Collections.emptySet();
 
-        result1 = vm.similar("亲");
+        result1 = vm.nearestTopN("亲");
         for (VectorModel.WordScore we : result1){
             System.out.println(we.name + " :\t" + we.score);
         }
