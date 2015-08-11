@@ -1,6 +1,6 @@
 package training;
 
-import training.Word2Vec.Method;
+import training.Trainer.Method;
 import huffman.HuffmanNode;
 import huffman.WordNode;
 
@@ -61,7 +61,7 @@ public class ThreadTrainer implements Runnable {
     private void training(List<String> sentence, double alpha) {
         for (int index = 0; index < sentence.size(); index++) {
             int extractedWordNum = random(0, windowSize-1);
-            if (trainMethod == Word2Vec.Method.CBow) {
+            if (trainMethod == Trainer.Method.CBow) {
                 cbowGram(index, sentence, extractedWordNum, alpha);
             } else {
                 skipGram(index, sentence, extractedWordNum, alpha);

@@ -103,10 +103,12 @@ public class VectorModel {
     			continue;
     		}
     		double dist = MathUtils.dotProduct(center, entry.getValue());
-    		if (topHeap.size() < num) {
+    		if (topHeap.isEmpty()) {
         		topHeap.add(new WordScore(word, dist));
     		} else if (topHeap.peek().score > dist) {
-    			topHeap.poll();
+                if (topHeap.size() == num) {
+                    topHeap.poll();
+                }
     			topHeap.add(new WordScore(word, dist));
     		}
     	}

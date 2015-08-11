@@ -2,7 +2,6 @@ package training;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,7 +25,7 @@ import huffman.HuffmanNode;
 import huffman.HuffmanTree;
 import huffman.WordNode;
 
-public class Word2Vec {
+public class Trainer {
 
     public enum Method {
         CBow, SKIP_GRAM
@@ -48,7 +47,7 @@ public class Word2Vec {
     public static class Factory {
         private int vectorSize = 200;
         private int windowSize = 5;
-        private int freqThresold = 3;
+        private int freqThreshold = 3;
         private Method trainMethod = Method.SKIP_GRAM;
         private double sample = 1e-4;
 //        private int negativeSample = 0;
@@ -65,8 +64,8 @@ public class Word2Vec {
             windowSize = size;
             return this;
         }
-        public Factory setFreqThresold(int thresold){
-            freqThresold = thresold;
+        public Factory setFreqThreshold(int threshold){
+            freqThreshold = threshold;
             return this;
         }
         public Factory setMethod(Method method){
@@ -98,15 +97,15 @@ public class Word2Vec {
         	return this;
         }
         
-        public Word2Vec build(){
-            return new Word2Vec(this);
+        public Trainer build(){
+            return new Trainer(this);
         }
     }
 
-    private Word2Vec(Factory factory) {
+    private Trainer(Factory factory) {
         vectorSize = factory.vectorSize;
         windowSize = factory.windowSize;
-        freqThreshold = factory.freqThresold;
+        freqThreshold = factory.freqThreshold;
         trainMethod = factory.trainMethod;
         subsampleRate = factory.sample;
 //        negativeSample = factory.negativeSample;
@@ -120,7 +119,7 @@ public class Word2Vec {
     private void buildVocabulary(String inputFile, String outputFile) throws Exception {
         wordNodeMap = new HashMap<>(1<<16);
         try (BufferedReader br = new BufferedReader(new FileReader(inputFile))) {
-            String line = "";
+            String line;
             corpusLen = 0;
             while ((line = br.readLine()) != null) {
             	StringTokenizer st = new StringTokenizer(line);
@@ -167,24 +166,21 @@ public class Word2Vec {
     	long totalCount = 0;
         for (int i = 0; i < iter; i++) {
 	        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-	            String line = "";
+	            String line;
 	            while ((line = br.readLine()) != null) {
-	                List<String> sentence = new ArrayList<String>(maxSentenceLen+1);
+	                List<String> sentence = new ArrayList<>(maxSentenceLen+1);
 	            	StringTokenizer st = new StringTokenizer(line);
 	                while (st.hasMoreTokens()) {
 	                    String word = st.nextToken();
 	                    totalCount++;
 	                    // sentence中的单词都在wordNodeMap中
 	                    if (wordNodeMap.containsKey(word) && subsampleRate > 0) {
-	                        // The subsampling randomly discards frequent words while keeping the ranking same
-	                    	double ratio = wordNodeMap.get(word).getFrequency() / (subsampleRate * corpusLen);
-	                        double ran = (Math.sqrt(ratio) + 1) / ratio;	// monotonously increasing with ratio
-	                        if (ran >= MathUtils.randomOne()) {
+	                        if (include(wordNodeMap.get(word).getFrequency())) {
 	                            sentence.add(word);
 	                            if (sentence.size() >= maxSentenceLen) {
 	                            	sentence.add(String.valueOf(totalCount));
 	                            	corpusQueue.put(sentence);
-	                            	sentence = new ArrayList<String>(maxSentenceLen+1);
+	                            	sentence = new ArrayList<>(maxSentenceLen+1);
 	                            }
 	                        }
 	                    }
@@ -204,6 +200,13 @@ public class Word2Vec {
         System.out.println("\nFinish");
     }
 
+    // The subsampling randomly discards frequent words while keeping the ranking same
+    private boolean include(int frequency) {
+        double freqRatio = frequency / (subsampleRate * corpusLen);
+        double rand = (Math.sqrt(freqRatio) + 1) / freqRatio;	// monotonously increasing with ratio
+        return rand >= MathUtils.randomOne();
+    }
+
     public void saveModel(String fileName) {
     	try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
     		bw.write(wordNodeMap.size() + " " + vectorSize + "\n");
@@ -211,7 +214,7 @@ public class Word2Vec {
     			StringBuilder sb = new StringBuilder();
     			sb.append(entry.getKey());
     			for (float f : entry.getValue().getVector()) {
-    				sb.append(" " + f);
+    				sb.append(" ").append(f);
     			}
     			sb.append("\n");
     			bw.write(sb.toString());
@@ -223,24 +226,23 @@ public class Word2Vec {
     
     private static List<WordNode> getNearest(Map<String, WordNode> wordNodeMap, String word, int num) {
     	final float[] vec = wordNodeMap.get(word).getVector();
-    	MathUtils.cosineDis(vec, wordNodeMap.get("dogs").getVector());
-    	PriorityQueue<WordNode> heap = new PriorityQueue<WordNode>(
-    													num, (x, y) -> compareProduct(x, y, vec));
-    	for (WordNode node : wordNodeMap.values()) {
-    		if (!node.getWord().equals(word)) {
-    			if (heap.size() < num) {
-    				heap.add(node);
-    			} else if (compareProduct(heap.peek(), node, vec) < 0) {
-					heap.poll();
-    				heap.add(node);
-    			}
-    		}
-    	}
+    	PriorityQueue<WordNode> heap = new PriorityQueue<>(num, (x, y) -> compareProduct(x, y, vec));
+        wordNodeMap.forEach((key, value) -> {
+            if (!value.getWord().equals(word)) {
+                if (heap.isEmpty()) {
+                    heap.add(value);
+                } else if (compareProduct(heap.peek(), value, vec) < 0) {
+                    if (heap.size() == num) {
+                        heap.poll();
+                    }
+                    heap.add(value);
+                }
+            }
+        });
     	List<WordNode> result = new ArrayList<>(heap);
     	Collections.sort(result, (x, y) -> compareProduct(y, x, vec));
     	for (WordNode node : result) {
-    		System.out.println(node.getWord() + ":\t" + 
-    						   MathUtils.cosineDis(node.getVector(), vec));
+    		System.out.println(node.getWord() + ":\t" + MathUtils.cosineDis(node.getVector(), vec));
     	}
     	return result;
     }
@@ -251,9 +253,9 @@ public class Word2Vec {
     	return Double.compare(p1, p2);
     }
     
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+    public static void main(String[] args) throws IOException {
     	try (BufferedReader br = new BufferedReader(new FileReader(
-    			"/home/morris/github/Word2vecInJava/vector_skip"))) {
+    			"/home/morris/github/Word2vecInJava/vector"))) {
     		String line = "";
     		String[] parts = br.readLine().split(" ");
     		int wordNum = Integer.parseInt(parts[0]);

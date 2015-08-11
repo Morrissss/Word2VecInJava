@@ -1,18 +1,18 @@
 package main;
 
+import training.Trainer;
 import training.VectorModel;
-import training.Word2Vec;
 import training.WordScore;
 
 import java.util.List;
 
-public class TestWord2Vec {
+public class Word2Vec {
 
     public static void readByJava(String textFilePath, String tmpFilePath, String modelFilePath) throws Exception {
 
-        Word2Vec wv = new Word2Vec.Factory()
-		                .setMethod(Word2Vec.Method.SKIP_GRAM)
-		                .setFreqThresold(5)
+        Trainer wv = new Trainer.Factory()
+		                .setMethod(Trainer.Method.SKIP_GRAM)
+		                .setFreqThreshold(5)
 		                .setNumOfThread(10)
 		                .setWindow(8)
 		                .setSample(1e-4)
@@ -31,8 +31,8 @@ public class TestWord2Vec {
     }
 
     public static void main(String[] args) throws Exception {
-    	readByJava("/home/morris/github/Word2vecInJava/text8", 
+    	readByJava("/home/morris/github/Word2vecInJava/test",
     			   "/home/morris/github/Word2vecInJava/vocab", 
-    			   "/home/morris/github/Word2vecInJava/vector_skip");
+    			   "/home/morris/github/Word2vecInJava/vector");
     }
 }
