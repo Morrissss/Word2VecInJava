@@ -16,18 +16,24 @@ public class WordNode extends HuffmanNode {
         this.word = word;
     }
 
-    public WordNode(String word, int freq, int vectorSize) {
-        super(freq, vectorSize);
+    public WordNode(String word, int freq, int vectorSize, boolean useNeg) {
+        super(freq, vectorSize, useNeg);
         this.word = word;
         for (int i = 0; i < vector.length; i++) {
             vector[i] = (float) (MathUtils.randomOne() - 0.5) / vectorSize;
         }
     }
 
-	@Override
-	public String toString() {
-		return "WordNode [word=" + word + ", frequency=" + frequency
-				+ ", code=" + code + ", parent=" + parent + ", vector="
-				+ Arrays.toString(vector) + "]";
-	}
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("WordNode{");
+        sb.append("word='").append(word).append('\'');
+        sb.append(", frequency=").append(frequency);
+        sb.append(", code=").append(code);
+        sb.append(", parent=").append(parent);
+        sb.append(", vector=").append(Arrays.toString(vector));
+        sb.append(", negVector=").append(Arrays.toString(negVector));
+        sb.append('}');
+        return sb.toString();
+    }
 }

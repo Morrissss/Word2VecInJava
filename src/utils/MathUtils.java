@@ -7,6 +7,7 @@ public class MathUtils {
     private static final int EXP_TABLE_SIZE = 1000;
     private static final int MAX_EXP = 6;
     private static final double[] EXP_TABLE;
+
     static {
         EXP_TABLE = new double[EXP_TABLE_SIZE];
         for (int i = 0; i < EXP_TABLE_SIZE; i++) {
@@ -19,14 +20,16 @@ public class MathUtils {
 
 
     public static double sigmoid(double x) {
-        if (x <= -MAX_EXP)
+        if (x <= -MAX_EXP) {
             return 0;
-        if (x >= MAX_EXP)
+        }
+        if (x >= MAX_EXP) {
             return 1;
+        }
         return EXP_TABLE[(int) ((x + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))];
     }
 
-    public static long random() {	
+    public static long random() {
         return rand.updateAndGet(x -> x * 25214903917L + 11);
     }
 
@@ -36,13 +39,15 @@ public class MathUtils {
     }
 
     public static int random(int lowerBound, int upperBound) {
-    	int mod = upperBound-lowerBound+1;
-        return lowerBound + (int) (random() % mod + mod) % mod;
+        int mod = upperBound - lowerBound + 1;
+        int res = (int) random() % mod;
+        return lowerBound + (res < 0 ? res + mod : res);
     }
-    
+
     public static double norm2(float[] vec) {
-        if (vec == null || vec.length == 0)
+        if (vec == null || vec.length == 0) {
             return Double.NaN;
+        }
         double norm2 = 0.0;
         for (double e : vec) {
             norm2 += e * e;
@@ -59,8 +64,9 @@ public class MathUtils {
     }
 
     public static float[] vectorAdd(float[] vec1, float[] vec2) {
-        if (vec1 == null || vec2 == null || vec1.length != vec2.length)
+        if (vec1 == null || vec2 == null || vec1.length != vec2.length) {
             return null;
+        }
         float[] result = new float[vec1.length];
         for (int i = 0; i < result.length; i++) {
             result[i] = vec1[i] + vec2[i];
@@ -69,8 +75,9 @@ public class MathUtils {
     }
 
     public static float[] vectorMinus(float[] vec1, float[] vec2) {
-        if (vec1 == null || vec2 == null || vec1.length != vec2.length)
+        if (vec1 == null || vec2 == null || vec1.length != vec2.length) {
             return null;
+        }
         float[] result = new float[vec1.length];
         for (int i = 0; i < result.length; i++) {
             result[i] = vec1[i] - vec2[i];
@@ -79,47 +86,56 @@ public class MathUtils {
     }
 
     public static void vectorAcc(float[] vec1, float[] vec2) {
-        if (vec2 == null || vec2.length != vec1.length)
+        if (vec2 == null || vec2.length != vec1.length) {
             return;
+        }
         for (int i = 0; i < vec1.length; i++) {
             vec1[i] += vec2[i];
         }
     }
+
     public static void vectorAcc(double[] vec1, double[] vec2) {
-        if (vec2 == null || vec2.length != vec1.length)
+        if (vec2 == null || vec2.length != vec1.length) {
             return;
+        }
         for (int i = 0; i < vec1.length; i++) {
             vec1[i] += vec2[i];
         }
     }
 
     public static void vectorSub(float[] vec1, float[] vec2) {
-        if (vec2 == null || vec2.length != vec1.length)
+        if (vec2 == null || vec2.length != vec1.length) {
             return;
+        }
         for (int i = 0; i < vec1.length; i++) {
             vec1[i] -= vec2[i];
         }
     }
+
     public static void vectorSub(double[] vec1, double[] vec2) {
-        if (vec2 == null || vec2.length != vec1.length)
+        if (vec2 == null || vec2.length != vec1.length) {
             return;
+        }
         for (int i = 0; i < vec1.length; i++) {
             vec1[i] -= vec2[i];
         }
     }
 
     public static float[] vectorScale(float[] vec, double scale) {
-        if (vec == null)
+        if (vec == null) {
             return null;
+        }
         float[] result = new float[vec.length];
         for (int i = 0; i < vec.length; i++) {
             result[i] = (float) (vec[i] * scale);
         }
         return result;
     }
+
     public static double[] vectorScale(double[] vec, double scale) {
-        if (vec == null)
+        if (vec == null) {
             return null;
+        }
         double[] result = new double[vec.length];
         for (int i = 0; i < vec.length; i++) {
             result[i] = (float) (vec[i] * scale);
@@ -128,25 +144,28 @@ public class MathUtils {
     }
 
     public static double dotProduct(float[] vec1, float[] vec2) {
-        if (vec1 == null || vec2 == null || vec1.length != vec2.length)
+        if (vec1 == null || vec2 == null || vec1.length != vec2.length) {
             return Double.NaN;
+        }
         double result = 0.0;
         for (int i = 0; i < vec1.length; i++) {
             result += vec1[i] * vec2[i];
         }
         return result;
     }
+
     public static double dotProduct(double[] vec1, double[] vec2) {
-        if (vec1 == null || vec2 == null || vec1.length != vec2.length)
+        if (vec1 == null || vec2 == null || vec1.length != vec2.length) {
             return Double.NaN;
+        }
         double result = 0.0;
         for (int i = 0; i < vec1.length; i++) {
             result += vec1[i] * vec2[i];
         }
         return result;
     }
-    
+
     public static double cosineDis(float[] vec1, float[] vec2) {
-    	return dotProduct(vec1, vec2) / (norm2(vec1) * norm2(vec2));
+        return dotProduct(vec1, vec2) / (norm2(vec1) * norm2(vec2));
     }
 }

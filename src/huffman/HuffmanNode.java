@@ -11,14 +11,16 @@ public class HuffmanNode implements Comparable<HuffmanNode> {
     protected int code = 0;
     protected HuffmanNode parent;
     protected float[] vector;
+    protected float[] negVector;
     
     /**
      * 包含本节点，不包含根节点
      */
     public List<HuffmanNode> findPath(HuffmanNode root) {
     	List<HuffmanNode> result = new ArrayList<>();
-    	for (HuffmanNode p = this; p != root; p = p.parent)
-    		result.add(p);
+    	for (HuffmanNode p = this; p != root; p = p.parent) {
+            result.add(p);
+        }
     	Collections.reverse(result);
     	return result;
     }
@@ -51,8 +53,15 @@ public class HuffmanNode implements Comparable<HuffmanNode> {
         this.vector = vector;
     }
 
-	public static HuffmanNode merge(HuffmanNode left, HuffmanNode right) {
-        HuffmanNode result = new HuffmanNode(left.frequency + right.frequency, left.vector.length);
+    public float[] getNegVector() {
+        return negVector;
+    }
+    public void setNegVector(float[] negVector) {
+        this.negVector = negVector;
+    }
+
+    public static HuffmanNode merge(HuffmanNode left, HuffmanNode right, boolean useNeg) {
+        HuffmanNode result = new HuffmanNode(left.frequency + right.frequency, left.vector.length, useNeg);
         left.parent = right.parent = result;
         left.code = 0;
         right.code = 1;
@@ -65,17 +74,25 @@ public class HuffmanNode implements Comparable<HuffmanNode> {
                 this.frequency == hn.frequency ? 0 : -1;
     }
 
-    public HuffmanNode(int freq, int vectorSize) {
+    public HuffmanNode(int freq, int vectorSize, boolean useNeg) {
         this.frequency = freq;
         vector = new float[vectorSize];
         parent = null;
         code = -1;
+        if (useNeg) {
+            vector = new float[vectorSize];
+        }
     }
 
     @Override
-	public String toString() {
-		return "HuffmanNode [frequency=" + frequency + ", code=" + code
-				+ ", parent=" + parent + ", vector=" + Arrays.toString(vector)
-				+ "]";
-	}
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("HuffmanNode{");
+        sb.append("frequency=").append(frequency);
+        sb.append(", code=").append(code);
+        sb.append(", parent=").append(parent);
+        sb.append(", vector=").append(Arrays.toString(vector));
+        sb.append(", negVector=").append(Arrays.toString(negVector));
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -25,16 +25,16 @@ public class VectorModel {
         }
         this.wordToVectorMap = wordToVectorMap;
         for (Map.Entry<String, float[]> wordVec : wordToVectorMap.entrySet()) {
-        	this.wordVecDim = wordVec.getValue().length;
-        	break;
+            this.wordVecDim = wordVec.getValue().length;
+            break;
         }
     }
 
     public static VectorModel loadFromFile(String path) throws Exception {
-        if (path == null || path.isEmpty()){
+        if (path == null || path.isEmpty()) {
             throw new IllegalArgumentException("path should not be empty");
         }
-        Map<String, float[]> wordMapLoaded = new HashMap<>(1<<16);
+        Map<String, float[]> wordMapLoaded = new HashMap<>(1 << 16);
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line = br.readLine();
             String[] parts = line.split(" ");
@@ -47,7 +47,7 @@ public class VectorModel {
                 String word = parts[0];
                 float[] value = new float[wordVectorDim];
                 for (int j = 0; j < wordVectorDim; j++) {
-                    value[j] = Float.parseFloat(parts[j+1]);
+                    value[j] = Float.parseFloat(parts[j + 1]);
                 }
                 MathUtils.normalizeVector(value);
                 wordMapLoaded.put(word, value);
@@ -80,38 +80,39 @@ public class VectorModel {
     /**
      * 词迁移，即word1 - word0 + word2 的结果，若三个词中有一个不在模型中，
      * 也就是没有词向量，则返回空集
+     *
      * @return 与结果最相近的前topNSize个词
      */
-    public List<WordScore> analogy(String wordFrom, String wordTo, String wordTarget, 
-    								  int topNSize) {
+    public List<WordScore> analogy(String wordFrom, String wordTo, String wordTarget,
+                                   int topNSize) {
         float[] vecFrom = wordToVectorMap.get(wordFrom);
         float[] vecTo = wordToVectorMap.get(wordTo);
         float[] vecTarget = wordToVectorMap.get(wordTarget);
         if (vecTo == null || vecTarget == null || vecFrom == null) {
             return Collections.emptyList();
         }
-        
+
         float[] targetCenter = MathUtils.vectorAdd(vecTarget, MathUtils.vectorMinus(vecTo, vecFrom));
         return findNearest(targetCenter, wordTarget, topNSize);
     }
-    
+
     private List<WordScore> findNearest(float[] center, String excludeWord, int num) {
         PriorityQueue<WordScore> topHeap = new PriorityQueue<>(num);
-    	for (Map.Entry<String, float[]> entry : wordToVectorMap.entrySet()) {
-    		String word = entry.getKey();
-    		if (word.equals(excludeWord)) {
-    			continue;
-    		}
-    		double dist = MathUtils.dotProduct(center, entry.getValue());
-    		if (topHeap.isEmpty()) {
-        		topHeap.add(new WordScore(word, dist));
-    		} else if (topHeap.peek().score > dist) {
+        for (Map.Entry<String, float[]> entry : wordToVectorMap.entrySet()) {
+            String word = entry.getKey();
+            if (word.equals(excludeWord)) {
+                continue;
+            }
+            double dist = MathUtils.dotProduct(center, entry.getValue());
+            if (topHeap.isEmpty()) {
+                topHeap.add(new WordScore(word, dist));
+            } else if (topHeap.peek().score > dist) {
                 if (topHeap.size() == num) {
                     topHeap.poll();
                 }
-    			topHeap.add(new WordScore(word, dist));
-    		}
-    	}
+                topHeap.add(new WordScore(word, dist));
+            }
+        }
         List<WordScore> result = new ArrayList<>(topHeap);
         Collections.sort(result, Collections.reverseOrder());
         return result;

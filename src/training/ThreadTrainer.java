@@ -141,7 +141,7 @@ public class ThreadTrainer implements Runnable {
         	if (i != index) {
 	        	float[] contextWordVec = wordNodeMap.get(sentence.get(i)).getVector();
             	synchronized (contextWordVec) {
-            		vectorAcc(neu1, contextWordVec);
+                    vectorAcc(neu1, contextWordVec);
             	}
         	}
         }
